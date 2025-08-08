@@ -1,7 +1,15 @@
 name: mienv
 channels:
   - defaults
+  - pytorch
 dependencies:
   - python=3.10.11
-  - pytorch-cuda=11.8
-prefix: C:\Users\rajar\anaconda3\envs\mienv
+  - numpy=1.26
+  - pip
+  - pip:
+      - torch==2.7.0+cu126
+      - torchvision==0.22.0+cu126
+      - torchaudio==2.7.0+cu126
+      - xformers
+      - audiocraft
+      - ipython
