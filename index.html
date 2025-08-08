@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coding Jeagers - AI Music Generator</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Header Section -->
+    <div class="up">
+      <h1>BEATLY</h1>
+      <h2>YOUR MOOD, OUR CODE, AI's MAGIC</h2>
+    </div>
+    
+    <!-- Main Form Container -->
+    <div class="bottom">
+      <!-- Music Generation Form -->
+      <div id="musicForm">
+        <!-- Genre Selection -->
+        <div>
+          <label for="genre" class="musicType">Select Genre</label>
+          <select id="genre" name="genre">
+            <option value="Pop">Pop</option>
+            <option value="Hip-Hop">Hip-Hop</option>
+            <option value="Jazz">Jazz</option>
+            <option value="Classical">Classical</option>
+            <option value="EDM">EDM</option>
+            <option value="Lofi">Lofi</option>
+          </select>
+        </div>
+        
+        <!-- Mood Selection -->
+        <div>
+          <label for="mood" class="musicType">Select Mood</label>
+          <select id="mood" name="mood">
+            <option value="Happy">Happy</option>
+            <option value="Sad">Sad</option>
+            <option value="Energetic">Energetic</option>
+            <option value="Calm">Calm</option>
+            <option value="Epic">Epic</option>
+          </select>
+        </div>
+        
+        <!-- Tempo Selection with Range Slider -->
+        <div>
+          <label for="tempo" class="musicType">Select Tempo (BPM)</label>
+          <input type="range" id="tempo" name="tempo" min="60" max="180" value="100" oninput="updateTempoDisplay()" />
+          <div class="tempo-display" id="tempoDisplay">100 BPM</div>
+        </div>
+        
+        <!-- Duration Input -->
+        <div>
+          <label for="duration" class="musicType">Duration (seconds)</label>
+          <input type="number" id="duration" name="duration" min="5" max="30" value="10" />
+        </div>
+        
+        <!-- Generate Music Button -->
+        <button type="button" onclick="generateMusic()">🎵 Generate Music</button>
+      </div>
+      
+      <!-- Status Message Display -->
+      <div id="message">Select your preferences and click "Generate Music" to start creating!</div>
+      
+      <!-- Music Player (initially hidden) -->
+      <div id="musicPlayer" style="display: none;">
+        <!-- Player Header with Track Info -->
+        <div class="player-header">
+          <h3 id="trackTitle">🎵 Your Generated Track</h3>
+          <p id="trackDetails">Ready to play</p>
+        </div>
+        
+        <!-- Audio Player Controls -->
+        <div class="player-controls">
+          <audio id="generatedAudio" controls preload="none">
+            <source id="audioSource" src="Output/audio.mp3" type="audio/mp3">
+            Your browser does not support the audio element.
+          </audio>
+        </div>
+        
+        <!-- Player Action Buttons -->
+        <div class="player-actions">
+          <button onclick="downloadTrack()" class="download-btn">📥 Download</button>
+          <button onclick="generateAnother()" class="generate-btn">🎲 Generate Another</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Bottom Description Message -->
+    <p class="custom-msg">
+      We're at Coding Jeagers team of passionate developers and AI engineers blending music and artificial intelligence to create a
+      unique streaming experience.
+      <br><br>
+      Our project, <strong>BEATLY</strong>, lets you generate music based on your mood, genre, and tempo — all
+      powered by AI.
+      <br><br>
+      Turning ideas into melodies, one click at a time.
+    </p>
+  </div>
+
+  <script>
+    // Main function to generate music - triggered by button click
+    function generateMusic() {
+      // Get form values
+      const genre = document.getElementById('genre').value;
+      const mood = document.getElementById('mood').value;
+      const tempo = document.getElementById('tempo').value;
+      const duration = document.getElementById('duration').value;
+      const message = document.getElementById('message');
+      const musicPlayer = document.getElementById('musicPlayer');
+      
+      // Hide music player if currently visible
+      musicPlayer.style.display = 'none';
+      
+      // Show generating message with animation
+      message.innerHTML = `🎵 Generating ${mood} ${genre} music at ${tempo} BPM for ${duration} seconds...`;
+      message.style.background = 'rgba(255, 193, 7, 0.2)';
+      message.style.borderColor = 'rgba(255, 193, 7, 0.5)';
+      message.className = 'message-generating';
+      
+      // Simulate API call to backend
+      BackendCall(genre, mood, tempo, duration)
+    }
+    
+    // Simulate backend API call - replace with real API in production
+    async function BackendCall(genre, mood, tempo, duration) {
+        // Simulate network delay
+        const formData = {
+        genre: genre,
+        mood: mood,
+        tempo: tempo,
+        duration: duration
+        };
+
+      console.log(formData);
+
+      try {
+        // Send POST request asynchronously
+        const response = await fetch('http://localhost:8000', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(formData)
+        });
+
+        if (!response.ok) {
+          throw new Error(`Server error: ${response.status}`);
+        }
+
+          const data = await response.json();
+          // Display the result returned from backend
+          if (data.result) {
+          result = data.result;
+          console.log(result);
+          const response = data.result;
+          console.log("response will be printed here");
+          console.log(response);
+          if (response === 'ready') {
+              showMusicPlayer(response, genre, mood, tempo, duration);
+              message.style.display = 'none'; // Hide the message when player shows
+            }
+          } else {
+            result= 'No result returned.';
+            console.log(result)
+            showError('Failed to generate music. Please try again.');
+          }
+      } catch (error) {
+        result = 'Error: ' + error.message;
+        console.error(result);
+        showError('Failed to generate music. Please try again.');
+      }
+  
+      };
+  
+    
+    // Generate demo audio URL (replace with actual backend URL in production)
+    function generateDemoAudioUrl() {
+      // For demo, we'll use a placeholder audio file
+      // In production, this would be the URL returned by your backend
+      return 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DqvGwPBhxh9vO+ZxsGAaKV3Oi2aRgHOZMN'; // Minimal empty audio for demo
+    }
+    
+    // Show music player when backend returns ready status
+    function showMusicPlayer(response, genre, mood, tempo, duration) {
+      const musicPlayer = document.getElementById('musicPlayer');
+      const trackTitle = document.getElementById('trackTitle');
+      const trackDetails = document.getElementById('trackDetails');
+      const audioSource = document.getElementById('audioSource');
+      const audio = document.getElementById('generatedAudio');
+      
+      // Update track information display
+      trackTitle.textContent = `🎵 ${mood} ${genre} Track`;
+      trackDetails.textContent = `${tempo} BPM • ${duration}s • Generated with AI`;
+      
+      // Set audio source (in production, use response.audioUrl)
+      // audioSource.src = response.audioUrl;
+      
+      // Create animated audio visualization
+      createAudioVisualizer();
+      
+      // Show the player with slide-in animation
+      musicPlayer.style.display = 'block';
+      
+      // Load the audio element
+      audio.load();
+    }
+    
+    // Create animated audio visualizer bars
+    function createAudioVisualizer() {
+      const playerControls = document.querySelector('.player-controls');
+      
+      // Remove existing visualizer if any
+      const existingVisualizer = document.querySelector('.audio-visualizer');
+      if (existingVisualizer) {
+        existingVisualizer.remove();
+      }
+      
+      // Create new visualizer container
+      const visualizer = document.createElement('div');
+      visualizer.className = 'audio-visualizer';
+      
+      // Create 20 animated visualizer bars
+      for (let i = 0; i < 20; i++) {
+        const bar = document.createElement('div');
+        bar.className = 'visualizer-bar';
+        bar.style.animationDelay = `${i * 0.1}s`; // Stagger animation
+        visualizer.appendChild(bar);
+      }
+      
+      // Add visualizer to player controls
+      playerControls.appendChild(visualizer);
+    }
+    
+    // Show error message if generation fails
+    function showError(errorMessage) {
+      const message = document.getElementById('message');
+      message.innerHTML = `❌ ${errorMessage}`;
+      message.style.background = 'rgba(220, 53, 69, 0.2)';
+      message.style.borderColor = 'rgba(220, 53, 69, 0.5)';
+      message.className = '';
+    }
+    
+    // Handle track download - triggered by download button
+    function downloadTrack() {
+      const link = document.createElement('a');
+      link.href = 'audio.mp3'; // Change this to your actual filename
+      link.download = 'audio.mp3';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+    
+    // Generate another track - hide player and show form again
+    function generateAnother() {
+      const musicPlayer = document.getElementById('musicPlayer');
+      const message = document.getElementById('message');
+      
+      // Hide player and show form again
+      musicPlayer.style.display = 'none';
+      message.style.display = 'flex';
+      message.innerHTML = 'Select your preferences and click "Generate Music" to start creating!';
+      message.style.background = 'rgba(255, 255, 255, 0.1)';
+      message.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+      message.className = '';
+    }
+    
+    // Update tempo display when range slider changes
+    function updateTempoDisplay() {
+      const tempo = document.getElementById('tempo').value;
+      document.getElementById('tempoDisplay').textContent = tempo + ' BPM';
+    }
+  </script>
+</body>
+</html>
